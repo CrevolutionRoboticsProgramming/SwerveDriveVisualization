@@ -58,7 +58,6 @@ public class Main
             End vector is vector of movement added to vector of rotation
             Vector of rotation has a magnitude equal to the value of the right X-axis
             Angle of the vector of rotation must be perpendicular to the line between the wheel and the center of the robot
-
             We know magnitude and angle
             magnitude = sqrt(y^2 + x^2)
             angle = arctan(y/x)
@@ -77,7 +76,7 @@ public class Main
                 for (Vector2f comparisonVector : wheelVectors)
                 {
                     if (Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2))
-                        < Math.sqrt(Math.pow(comparisonVector.x, 2) + Math.pow(comparisonVector.y, 2)))
+                            < Math.sqrt(Math.pow(comparisonVector.x, 2) + Math.pow(comparisonVector.y, 2)))
                     {
                         largest = false;
                         break;
@@ -106,7 +105,7 @@ public class Main
 
             for (int i = 0; i < wheelVectors.size(); ++i)
             {
-               wheelVectors.setElementAt(new Vector2f((float) (wheelVectors.elementAt(i).x * multiplier), (float) (wheelVectors.elementAt(i).y * multiplier)), i);
+                wheelVectors.setElementAt(new Vector2f((float) (wheelVectors.elementAt(i).x * multiplier), (float) (wheelVectors.elementAt(i).y * multiplier)), i);
             }
 
             topLeft.applyRotation(wheelVectors.elementAt(0));
