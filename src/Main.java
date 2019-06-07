@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Vector;
-import java.util.function.BiFunction;
 
 public class Main
 {
@@ -116,11 +115,6 @@ public class Main
                 wheelVectors.setElementAt(new Vector2f((float) (wheelVectors.elementAt(i).x * multiplier), (float) (wheelVectors.elementAt(i).y * multiplier)), i);
             }
 
-            System.out.println("X: " + wheelVectors.get(0).x + ", Y: " + wheelVectors.get(0).y);
-            System.out.println(topLeft.getPerpendicularAngle() * 360 / Math.PI);
-            System.out.println(Math.atan2(wheelVectors.get(0).y, wheelVectors.get(0).x) * 180 / Math.PI - 90);
-            System.out.println();
-
             turnToAngle(topLeft, Math.atan2(wheelVectors.get(0).y, wheelVectors.get(0).x) * 180 / Math.PI - 90, 0);
             turnToAngle(topRight, Math.atan2(wheelVectors.get(1).y, wheelVectors.get(1).x) * 180 / Math.PI - 90, 1);
             turnToAngle(bottomLeft, Math.atan2(wheelVectors.get(2).y, wheelVectors.get(2).x) * 180 / Math.PI - 90, 2);
@@ -214,25 +208,6 @@ public class Main
                 smallestDifference = pair.getKey();
                 break;
             }
-        }
-
-        if (index == 0)
-        {
-            /*
-            System.out.println(smallestDifference);
-            System.out.println("Smallest Difference: " + differences.get(smallestDifference));
-            System.out.println("Target: " + target);
-            System.out.println("Opposite Angle: " + oppositeAngle);
-            System.out.println("Counts: " + counts);
-            */
-            /*
-            for (HashMap.Entry<String, Double> pair : differences.entrySet())
-            {
-                System.out.println(pair.getKey() + ": " + pair.getValue());
-            }
-            */
-
-            //System.out.println();
         }
 
         if (counts > target) differences.replace("Best Case", -differences.get("Best Case"));
