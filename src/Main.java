@@ -6,17 +6,14 @@ import org.jsfml.window.event.Event;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Vector;
 
 public class Main
 {
-    public static double dt_countsPerSwerveRotation = 4096;
-    public static int[] driveMultipliers = {1, 1, 1, 1};
-    public static boolean[] stopped = {false, false, false, false},
-            lastStopped = {false, false, false, false};
-    public static double[] lastTarget = {0, 0, 0, 0};
-
+    private static Constants mConstants = Constants.getInstance();
+    
     public static void main(String[] args)
     {
         int joystickNumber = 0;
@@ -33,13 +30,20 @@ public class Main
             e.printStackTrace();
         }
 
-        Vector2f robotCenter = new Vector2f(400, 400);
-        Wheel topLeft = new Wheel(arrowTexture, new Vector2f(200, 200), robotCenter);
-        Wheel topRight = new Wheel(arrowTexture, new Vector2f(600, 200), robotCenter);
-        Wheel bottomLeft = new Wheel(arrowTexture, new Vector2f(200, 600), robotCenter);
-        Wheel bottomRight = new Wheel(arrowTexture, new Vector2f(600, 600), robotCenter);
+        SwerveModule mTopLeftModule = new SwerveModule(arrowTexture, mConstants.dt_topLeftPosition);
+        SwerveModule mTopRightModule = new SwerveModule(arrowTexture, mConstants.dt_topRightPosition);
+        SwerveModule mBottomLeftModule = new SwerveModule(arrowTexture, mConstants.dt_bottomLeftPosition);
+        SwerveModule mBottomRightModule = new SwerveModule(arrowTexture, mConstants.dt_bottomRightPosition);
+
+        ArrayList<SwerveModule> mSwerveModules = new ArrayList<>();
+        mSwerveModules.add(mTopLeftModule);
+        mSwerveModules.add(mTopRightModule);
+        mSwerveModules.add(mBottomLeftModule);
+        mSwerveModules.add(mBottomRightModule);
 
         double leftX, leftY, rotationMagnitude;
+
+        ArrayList<Vector2f> swerveMovementVectors = new ArrayList<>();
 
         while (window.isOpen())
         {
@@ -59,143 +63,98 @@ public class Main
             if (Math.abs(leftY) < 0.1) leftY = 0;
             if (Math.abs(rotationMagnitude) < 0.1) rotationMagnitude = 0;
 
-            /*
-            System.out.println("Left X: " + leftX);
-            System.out.println("Left Y: " + leftY);
-            System.out.println("Right X: " + rightX + '\n');
-             */
-
             Vector2f movement = new Vector2f((float) leftX, (float) leftY);
 
-            /*
-            End vector is vector of movement added to vector of rotation
-            Vector of rotation has a magnitude equal to the value of the right X-axis
-            Angle of the vector of rotation must be perpendicular to the line between the wheel and the center of the robot
+            swerveMovementVectors.clear();
 
-            We know magnitude and angle
-            magnitude = sqrt(y^2 + x^2)
-            angle = arctan(y/x)
-             */
-
-            Vector<Vector2f> wheelVectors = new Vector<>();
-            wheelVectors.add(Vector2f.add(new Vector2f(driveMultipliers[0] * movement.x, driveMultipliers[0] * movement.y), new Vector2f((float) (driveMultipliers[0] * rotationMagnitude * Math.cos(topLeft.getPerpendicularAngle())), (float) (driveMultipliers[0] * -rotationMagnitude * Math.sin(topLeft.getPerpendicularAngle())))));
-            wheelVectors.add(Vector2f.add(new Vector2f(driveMultipliers[1] * movement.x, driveMultipliers[1] * movement.y), new Vector2f((float) (driveMultipliers[1] * rotationMagnitude * Math.cos(topRight.getPerpendicularAngle())), (float) (driveMultipliers[1] * -rotationMagnitude * Math.sin(topRight.getPerpendicularAngle())))));
-            wheelVectors.add(Vector2f.add(new Vector2f(driveMultipliers[2] * movement.x, driveMultipliers[2] * movement.y), new Vector2f((float) (driveMultipliers[2] * rotationMagnitude * Math.cos(bottomLeft.getPerpendicularAngle())), (float) (driveMultipliers[2] * -rotationMagnitude * Math.sin(bottomLeft.getPerpendicularAngle())))));
-            wheelVectors.add(Vector2f.add(new Vector2f(driveMultipliers[3] * movement.x, driveMultipliers[3] * movement.y), new Vector2f((float) (driveMultipliers[3] * rotationMagnitude * Math.cos(bottomRight.getPerpendicularAngle())), (float) (driveMultipliers[3] * -rotationMagnitude * Math.sin(bottomRight.getPerpendicularAngle())))));
-
-            double largestMagnitude = 1;
-            for (Vector2f vector : wheelVectors)
+                /*
+                In these lines we:
+                1. Change the signs of the vector representing movement to accommodate its orientation (if it made backwards forwards to save time rotating)
+                2. Create a new vector with:
+                    a. The x-value as the x-component of the rotation vector
+                    b. The y-value as the y-component of the rotation vector
+                        i. This is where we use the perpendicular angle of the module; that's what rotates the magnitude and makes it a vector
+                3. Add the vectors to get the total vector representing our final movement
+                 */
+            for (SwerveModule module : mSwerveModules)
             {
-                boolean largest = true;
-                for (Vector2f comparisonVector : wheelVectors)
-                {
-                    if (Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2))
-                            < Math.sqrt(Math.pow(comparisonVector.x, 2) + Math.pow(comparisonVector.y, 2)))
-                    {
-                        largest = false;
-                        break;
-                    }
-                }
+                swerveMovementVectors.add(Vector2f.add(new Vector2f(movement.x, movement.y),
+                        new Vector2f((float) (rotationMagnitude * Math.cos(module.getPerpendicularAngle())), (float) (-rotationMagnitude * Math.sin(module.getPerpendicularAngle())))));
+            }
 
-                if (largest)
-                {
+            // If the largest magnitude is greater than one (which we can't use as a magnitude), set the multiplier to reduce
+            // the magnitude of all the vectors by the fraction it takes to reduce the largest magnitude to one
+            double largestMagnitude = 0;
+            for (Vector2f vector : swerveMovementVectors)
+            {
+                if (Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2)) > largestMagnitude)
                     largestMagnitude = Math.sqrt(Math.pow(vector.x, 2) + Math.pow(vector.y, 2));
-                }
             }
 
-            double multiplier = largestMagnitude > 1 ? 1 / largestMagnitude : 1;
-
-            /*
-            We want to set each vector to a value that is a fraction of the largest vector to normalize them
-            The largest vector should be set to one, the others some fraction
-             */
-
-            for (int i = 0; i < wheelVectors.size(); ++i)
+            if (largestMagnitude > 1.0)
             {
-                wheelVectors.setElementAt(new Vector2f((float) (wheelVectors.elementAt(i).x * multiplier), (float) (wheelVectors.elementAt(i).y * multiplier)), i);
+                double multiplier = 1 / largestMagnitude;
+                for (int i = 0; i < swerveMovementVectors.size(); ++i)
+                    swerveMovementVectors.set(i, new Vector2f((float) (swerveMovementVectors.get(i).x * multiplier), (float) (swerveMovementVectors.get(i).y * multiplier)));
             }
 
-            turnToAngle(topLeft, Math.atan2(wheelVectors.get(0).y, wheelVectors.get(0).x) * 180 / Math.PI - 90, 0);
-            turnToAngle(topRight, Math.atan2(wheelVectors.get(1).y, wheelVectors.get(1).x) * 180 / Math.PI - 90, 1);
-            turnToAngle(bottomLeft, Math.atan2(wheelVectors.get(2).y, wheelVectors.get(2).x) * 180 / Math.PI - 90, 2);
-            turnToAngle(bottomRight, Math.atan2(wheelVectors.get(3).y, wheelVectors.get(3).x) * 180 / Math.PI - 90, 3);
-
-            topLeft.update();
-            topRight.update();
-            bottomLeft.update();
-            bottomRight.update();
+            // Converts the angle to degrees for easier understanding. All the other angles were in radians because the Math trig functions use rads
+            for (int i = 0; i < mSwerveModules.size(); ++i)
+            {
+                turnToAngle(mSwerveModules.get(i), Math.atan2(swerveMovementVectors.get(i).y, swerveMovementVectors.get(i).x) * 180 / Math.PI - 90);
+                mSwerveModules.get(i).getDriveTalon().set(Math.sqrt(Math.pow(swerveMovementVectors.get(i).x, 2) + Math.pow(swerveMovementVectors.get(i).y, 2)));
+            }
 
             window.clear(Color.BLACK);
-            window.draw(topLeft);
-            window.draw(topRight);
-            window.draw(bottomLeft);
-            window.draw(bottomRight);
+            for (SwerveModule module : mSwerveModules)
+            {
+                module.update();
+                window.draw(module);
+            }
             window.display();
         }
     }
 
-    /*
-    Given target angle, rotate wheel from current position counts to target ticks
-    -360 <= target <= 360, -INF <= counts <= INF
-
-    Add 90 degrees to the target so everything lines up correctly
-    Convert the target to counts
-    Put current position on scale from 0 to M, total counts in wheel rotation
-    Rotate with PID to (original position + (absolute position - target))
-
-    Can be optimized; it's faster to rotate to 180 degrees of the target and reverse output in some cases
-    Opposite angle o is target - M/2; fix when negative by adding to M
-    If o - c < target - c, turn to original position + (o - absolute position) and reverse output
-    Else if target - absolute position > M/2, rotate the opposite direction but keep output the same
-    This prevents situations where the computer doesn't realize that 0 and 359 are right next to each other
-     */
-    public static void turnToAngle(Wheel wheel, double angle, int index)
+    private static void turnToAngle(SwerveModule module, double angle)
     {
-        // This gives us the counts of the swivel on a scale from 0 to the total counts per rotation
-        int rotationsCompleted = (int) Math.abs(wheel.getSelectedSensorPosition(0) / dt_countsPerSwerveRotation);
-        double counts = (Math.abs(wheel.getSelectedSensorPosition(0)) - (rotationsCompleted * dt_countsPerSwerveRotation));// / dt_countsPerSwerveRotation * 360;
-
-        // Converts target to ticks and puts it on scale from -360 to 360
-        double target = angle / 360 * dt_countsPerSwerveRotation;
-
-        // Puts negative counts in positive terms
-        if (target < 0)
-        {
-            target = dt_countsPerSwerveRotation + target;
-        }
-
-        // Puts negative counts in positive terms
-        if (counts < 0)
-        {
-            counts = dt_countsPerSwerveRotation + counts;
-        }
-
-        // We had to put the sensor position through Math.abs before, so this fixes absoluteCounts
-        if (wheel.getSelectedSensorPosition(0) < 0)
-        {
-            counts = dt_countsPerSwerveRotation - counts;
-        }
-
-        // We could end it here, but optimizations and field-centric driving help a lot with efficiency
+        double counts = module.getSwivelTalon().getSelectedSensorPosition(0);
 
         // This enables field-centric driving. It adds the rotation of the robot to the total counts so it knows where to turn
         //mPigeon.getYawPitchRoll(ypr);
-        //absoluteCounts += ypr[0] * dt_countsPerSwerveRotation;
+        //counts += (ypr[0] - ((int) (ypr[0] / 360) * 360)) / 360 * mConstants.dt_countsPerSwerveRotation;
+        // TO DO: What's the resolution of a pigeon? Find it and replace 360
 
-        double oppositeAngle = target - (dt_countsPerSwerveRotation / 2);
-        if (oppositeAngle < 0) oppositeAngle += dt_countsPerSwerveRotation;
+        // This gives us the counts of the swivel on a scale from 0 to the total counts per rotation
+        int rotationsCompleted = (int) (Math.abs(counts) / mConstants.dt_countsPerSwerveRotation);
+        counts = Math.abs(counts) - (rotationsCompleted * mConstants.dt_countsPerSwerveRotation);
 
-        HashMap<String, Double> differences = new HashMap<>();
-        differences.put("Best Case", Math.max(counts, target) - Math.min(counts, target));
-        differences.put("Over Gap", Math.min(counts, target) + (dt_countsPerSwerveRotation - Math.max(counts, target)));
-        differences.put("To Opposite Angle", Math.max(counts, oppositeAngle) - Math.min(counts, oppositeAngle));
-        differences.put("To Opposite Angle Over Gap", Math.min(counts, oppositeAngle) + (dt_countsPerSwerveRotation - Math.max(counts, oppositeAngle)));
+        // Converts target to ticks and puts it on scale from -360 to 360
+        double target = angle / 360 * mConstants.dt_countsPerSwerveRotation;
 
-        String smallestDifference = "";
-        for (HashMap.Entry<String, Double> pair : differences.entrySet())
+        // Puts negative counts in positive terms
+        if (target < 0) target += mConstants.dt_countsPerSwerveRotation;
+
+        // Puts negative counts in positive terms
+        if (counts < 0) counts += mConstants.dt_countsPerSwerveRotation;
+
+        // We had to put the sensor position through Math.abs before, so this fixes absoluteCounts
+        if (module.getSwivelTalon().getSelectedSensorPosition(0) < 0)
+            counts = mConstants.dt_countsPerSwerveRotation - counts;
+
+        double oppositeAngle = target - (mConstants.dt_countsPerSwerveRotation / 2);
+        if (oppositeAngle < 0) oppositeAngle += mConstants.dt_countsPerSwerveRotation;
+
+        HashMap<Case, Double> differences = new HashMap<>();
+        differences.put(Case.BEST_CASE, Math.max(counts, target) - Math.min(counts, target));
+        differences.put(Case.OVER_GAP, Math.min(counts, target) + (mConstants.dt_countsPerSwerveRotation - Math.max(counts, target)));
+        differences.put(Case.TO_OPPOSITE_ANGLE, Math.max(counts, oppositeAngle) - Math.min(counts, oppositeAngle));
+        differences.put(Case.TO_OPPOSITE_ANGLE_OVER_GAP, Math.min(counts, oppositeAngle) + (mConstants.dt_countsPerSwerveRotation - Math.max(counts, oppositeAngle)));
+
+        Case smallestDifference = Case.BEST_CASE;
+        for (HashMap.Entry<Case, Double> pair : differences.entrySet())
         {
             boolean smallest = true;
-            for (HashMap.Entry<String, Double> comparePair : differences.entrySet())
+            for (HashMap.Entry<Case, Double> comparePair : differences.entrySet())
             {
                 if (pair.getValue() > comparePair.getValue())
                 {
@@ -210,77 +169,172 @@ public class Main
             }
         }
 
-        if (counts > target) differences.replace("Best Case", -differences.get("Best Case"));
-        if (target > counts) differences.replace("Over Gap", -differences.get("Over Gap"));
-        if (counts > oppositeAngle) differences.replace("To Opposite Angle", -differences.get("To Opposite Angle"));
+        if (counts > target)
+            differences.replace(Case.BEST_CASE, -differences.get(Case.BEST_CASE));
+        if (target > counts)
+            differences.replace(Case.OVER_GAP, -differences.get(Case.OVER_GAP));
+        if (counts > oppositeAngle)
+            differences.replace(Case.TO_OPPOSITE_ANGLE, -differences.get(Case.TO_OPPOSITE_ANGLE));
         if (oppositeAngle > counts)
-            differences.replace("To Opposite Angle Over Gap", -differences.get("To Opposite Angle Over Gap"));
+            differences.replace(Case.TO_OPPOSITE_ANGLE_OVER_GAP, -differences.get(Case.TO_OPPOSITE_ANGLE_OVER_GAP));
 
         if (Math.abs(differences.get(smallestDifference)) < 8)
         {
-            wheel.set(0);
-            stopped[index] = true;
-            if ((!lastStopped[index] || target != lastTarget[index]) && (smallestDifference.equals("To Opposite Angle") || smallestDifference.equals("To Opposite Angle Over Gap")))
+            module.getSwivelTalon().set(0);
+            module.setStopped(true);
+            if (!module.getLastStopped() && (smallestDifference == Case.TO_OPPOSITE_ANGLE || smallestDifference == Case.TO_OPPOSITE_ANGLE_OVER_GAP))
             {
-                wheel.flip();
-                driveMultipliers[index] = -driveMultipliers[index];
+                module.getSwivelTalon().setInverted(!module.getSwivelTalon().getInverted());
+                module.getDriveTalon().setInverted(!module.getDriveTalon().getInverted());
+
+                module.getSwivelTalon().setSelectedSensorPosition((int) (module.getSwivelTalon().getSelectedSensorPosition(0) - (mConstants.dt_countsPerSwerveRotation / 2)));
             }
         } else
         {
-            wheel.set(differences.get(smallestDifference) > 0 ? 1 : -1);
-            stopped[index] = false;
+            module.getSwivelTalon().set(ControlMode.Position, module.getSwivelTalon().getSelectedSensorPosition(0) + differences.get(smallestDifference));
+            module.setStopped(false);
         }
 
-        lastStopped[index] = stopped[index];
-        lastTarget[index] = target;
-    }
-}
-
-class Wheel extends Sprite
-{
-    private Vector2f robotCenter;
-
-    private double output = 0;
-    private double counts = 0;
-
-    public Wheel(Texture texture, Vector2f position, Vector2f robotCenter)
-    {
-        super(texture);
-        setOrigin(new Vector2f(
-                getPosition().x + (getGlobalBounds().width / 2),
-                getPosition().y + (getGlobalBounds().height / 2)));
-        setPosition(position);
-        this.robotCenter = robotCenter;
+        module.setLastStopped(module.isStopped());
+        module.setLastTarget(target);
     }
 
-    void set(double output)
+    static class WPI_TalonSRX
     {
-        this.output = output;
+        public double output = 0;
+        public double counts = 0;
+
+        private boolean isInverted = false;
+
+        void set(ControlMode mode, double output)
+        {
+            if (mode == ControlMode.PercentOutput)
+            {
+                this.output = output;
+                if (isInverted)
+                    this.output = -this.output;
+            } else if (mode == ControlMode.Position)
+            {
+                if (output - counts != 0)
+                    this.output = output - counts > 0 ? 1 : -1;
+                else
+                    this.output = 0;
+            }
+        }
+
+        void set(double output)
+        {
+            set(ControlMode.PercentOutput, output);
+        }
+
+        void setSelectedSensorPosition(int pos)
+        {
+            counts = pos;
+        }
+
+        double getSelectedSensorPosition(int pidx)
+        {
+            return counts;
+        }
+
+        public boolean getInverted()
+        {
+            return isInverted;
+        }
+
+        public void setInverted(boolean inverted)
+        {
+            isInverted = inverted;
+        }
     }
 
-    void update()
+    static class SwerveModule extends Sprite
     {
-        rotate((float) -output);
-        counts += output / 360 * 4096;
+        private WPI_TalonSRX mDriveTalon, mSwivelTalon;
+        private boolean mStopped = false;
+        private boolean mLastStopped = false;
+        private double mLastTarget = 0.0;
+        private double mPerpendicularAngle = 0.0;
+
+        public SwerveModule(Texture texture, Vector2f position)
+        {
+            super(texture);
+            setOrigin(new Vector2f(
+                    getPosition().x + (getGlobalBounds().width / 2),
+                    getPosition().y + (getGlobalBounds().height / 2)));
+            setPosition(position);
+            mPerpendicularAngle = Math.atan2(Vector2f.sub(mConstants.robotCenter, getPosition()).y, Vector2f.sub(mConstants.robotCenter, getPosition()).x) - (Math.PI / 2);
+
+            mDriveTalon = new WPI_TalonSRX();
+            mSwivelTalon = new WPI_TalonSRX();
+        }
+
+        public WPI_TalonSRX getDriveTalon()
+        {
+            return mDriveTalon;
+        }
+
+        public WPI_TalonSRX getSwivelTalon()
+        {
+            return mSwivelTalon;
+        }
+
+        public double getPerpendicularAngle()
+        {
+            return mPerpendicularAngle;
+        }
+
+        public boolean isStopped()
+        {
+            return mStopped;
+        }
+
+        public void setStopped(boolean stopped)
+        {
+            mStopped = stopped;
+        }
+
+        public boolean getLastStopped()
+        {
+            return mLastStopped;
+        }
+
+        public void setLastStopped(boolean lastStopped)
+        {
+            mLastStopped = lastStopped;
+        }
+
+        public double getLastTarget()
+        {
+            return mLastTarget;
+        }
+
+        public void setLastTarget(double lastTarget)
+        {
+            mLastTarget = lastTarget;
+        }
+
+
+        void update()
+        {
+            rotate((float) -mSwivelTalon.output);
+            mSwivelTalon.counts += mSwivelTalon.output / 360 * 4096;
+
+            setScale(1, (float) (Math.abs(mDriveTalon.output) > 0.2 ? mDriveTalon.output : 0.2));
+        }
     }
 
-    double getSelectedSensorPosition(int pidx)
+    public enum ControlMode
     {
-        return counts;
+        PercentOutput,
+        Position
     }
 
-    void flip()
+    public enum Case
     {
-        setScale(getScale().x, getScale().y * -1);
-    }
-
-    public double getRadius()
-    {
-        return Math.sqrt(Math.pow(robotCenter.x - getPosition().x, 2) + Math.pow(robotCenter.y - getPosition().y, 2));
-    }
-
-    public double getPerpendicularAngle()
-    {
-        return Math.atan2(Vector2f.sub(robotCenter, getPosition()).y, Vector2f.sub(robotCenter, getPosition()).x) - (Math.PI / 2);
+        BEST_CASE,
+        OVER_GAP,
+        TO_OPPOSITE_ANGLE,
+        TO_OPPOSITE_ANGLE_OVER_GAP,
     }
 }

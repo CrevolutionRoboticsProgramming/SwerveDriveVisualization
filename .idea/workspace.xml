@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="07df02a0-ce80-4f92-a5a6-ab276158457c" name="Default Changelist" comment="">
+    <list default="true" id="30d26680-6857-4e9c-a86c-63932807c88e" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/Constants.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/Swerve Drive Visualization/Main.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Swerve Drive Visualization/Main.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/Swerve Drive Visualization/Wheel.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/Swerve Drive Visualization/Wheel.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/Swerve Drive Visualization/Wheel.class" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Main.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
@@ -18,20 +19,55 @@
     <option name="isMigrated" value="true" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+    <leaf>
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/Main.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="456">
-              <caret line="85" column="262" selection-start-line="85" selection-start-column="262" selection-end-line="85" selection-end-column="262" />
+            <state relative-caret-position="304">
+              <caret line="184" column="148" lean-forward="true" selection-start-line="184" selection-start-column="148" selection-end-line="184" selection-end-column="148" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="e#15116#15117#0" expanded="true" />
-                <element signature="e#15152#15153#0" expanded="true" />
-                <element signature="e#15457#15458#0" expanded="true" />
-                <element signature="e#15486#15487#0" expanded="true" />
-                <element signature="e#15509#15510#0" expanded="true" />
-                <element signature="e#15566#15567#0" expanded="true" />
+                <element signature="e#10147#10148#0" expanded="true" />
+                <element signature="e#10201#10202#0" expanded="true" />
+                <element signature="e#10252#10253#0" expanded="true" />
+                <element signature="e#10280#10281#0" expanded="true" />
+                <element signature="e#10334#10335#0" expanded="true" />
+                <element signature="e#10363#10364#0" expanded="true" />
+                <element signature="e#10403#10404#0" expanded="true" />
+                <element signature="e#10436#10437#0" expanded="true" />
+                <element signature="e#10489#10490#0" expanded="true" />
+                <element signature="e#10526#10527#0" expanded="true" />
+                <element signature="e#10397#10398#0" expanded="true" />
+                <element signature="e#10431#10432#0" expanded="true" />
+                <element signature="e#10479#10480#0" expanded="true" />
+                <element signature="e#10514#10515#0" expanded="true" />
+                <element signature="e#10563#10564#0" expanded="true" />
+                <element signature="e#10605#10606#0" expanded="true" />
+                <element signature="e#10643#10644#0" expanded="true" />
+                <element signature="e#10674#10675#0" expanded="true" />
+                <element signature="e#10725#10726#0" expanded="true" />
+                <element signature="e#10759#10760#0" expanded="true" />
+                <element signature="e#10802#10803#0" expanded="true" />
+                <element signature="e#10837#10838#0" expanded="true" />
+                <element signature="e#10896#10897#0" expanded="true" />
+                <element signature="e#10938#10939#0" expanded="true" />
+                <element signature="e#10979#10980#0" expanded="true" />
+                <element signature="e#11013#11014#0" expanded="true" />
+                <element signature="e#11069#11070#0" expanded="true" />
+                <element signature="e#11109#11110#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/Constants.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="417">
+              <caret line="31" column="100" selection-start-line="31" selection-start-column="100" selection-end-line="31" selection-end-column="100" />
+              <folding>
+                <element signature="e#71#72#0" expanded="true" />
+                <element signature="e#92#93#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -58,6 +94,9 @@
       <find>Joystick</find>
       <find>println(</find>
       <find>counts =</find>
+      <find>Vector2D</find>
+      <find>dt_countsPerSwerveRotation</find>
+      <find>robotCenter</find>
     </findStrings>
     <replaceStrings>
       <replace>topRight</replace>
@@ -65,8 +104,10 @@
       <replace>bottomRight</replace>
       <replace>Wheel</replace>
       <replace>wheelVectors</replace>
-      <replace>Vector2f</replace>
       <replace>wheel</replace>
+      <replace>Vector2f</replace>
+      <replace>mConstants.dt_countsPerSwerveRotation</replace>
+      <replace>mConstants.robotCenter</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -81,21 +122,42 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
+        <option value="$PROJECT_DIR$/src/mConstants.java" />
+        <option value="$PROJECT_DIR$/src/Constants.java" />
         <option value="$PROJECT_DIR$/src/Main.java" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-10" />
-    <option name="width" value="975" />
-    <option name="height" value="1050" />
+  <component name="ProjectFrameBounds">
+    <option name="x" value="-7" />
+    <option name="width" value="974" />
+    <option name="height" value="1047" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
-    <panes />
+    <panes>
+      <pane id="PackagesPane" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="SwerveDriveVisualization" type="b2602c69:ProjectViewProjectNode" />
+              <item name="SwerveDriveVisualization" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="SwerveDriveVisualization" type="b2602c69:ProjectViewProjectNode" />
+              <item name="SwerveDriveVisualization" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+    </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
@@ -121,6 +183,53 @@
     <configuration name="Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="Main" />
       <module name="Swerve Drive Visualization" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType" factoryName="Kotlin">
+      <module name="Swerve Drive Visualization" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="WORKING_DIRECTORY" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType" factoryName="Kotlin script">
+      <module name="Swerve Drive Visualization" />
+      <option name="filePath" />
+      <option name="vmParameters" />
+      <option name="alternativeJrePath" />
+      <option name="programParameters" />
+      <option name="passParentEnvs" value="true" />
+      <option name="workingDirectory" />
+      <option name="isAlternativeJrePathEnabled" value="false" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="WORKING_DIRECTORY" />
+      <option name="filePath" />
+      <option name="vmParameters" />
+      <option name="alternativeJrePath" />
+      <option name="programParameters" />
+      <option name="passParentEnvs" value="true" />
+      <option name="workingDirectory" />
+      <option name="isAlternativeJrePathEnabled" value="false" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="WORKING_DIRECTORY" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
@@ -157,7 +266,7 @@
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" weight="0.5226929" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.12260128" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Image Layers" order="2" />
       <window_info id="Designer" order="3" />
@@ -322,18 +431,51 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/Constants.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="417">
+          <caret line="31" column="100" selection-start-line="31" selection-start-column="100" selection-end-line="31" selection-end-column="100" />
+          <folding>
+            <element signature="e#71#72#0" expanded="true" />
+            <element signature="e#92#93#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/Main.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="456">
-          <caret line="85" column="262" selection-start-line="85" selection-start-column="262" selection-end-line="85" selection-end-column="262" />
+        <state relative-caret-position="304">
+          <caret line="184" column="148" lean-forward="true" selection-start-line="184" selection-start-column="148" selection-end-line="184" selection-end-column="148" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="e#15116#15117#0" expanded="true" />
-            <element signature="e#15152#15153#0" expanded="true" />
-            <element signature="e#15457#15458#0" expanded="true" />
-            <element signature="e#15486#15487#0" expanded="true" />
-            <element signature="e#15509#15510#0" expanded="true" />
-            <element signature="e#15566#15567#0" expanded="true" />
+            <element signature="e#10147#10148#0" expanded="true" />
+            <element signature="e#10201#10202#0" expanded="true" />
+            <element signature="e#10252#10253#0" expanded="true" />
+            <element signature="e#10280#10281#0" expanded="true" />
+            <element signature="e#10334#10335#0" expanded="true" />
+            <element signature="e#10363#10364#0" expanded="true" />
+            <element signature="e#10403#10404#0" expanded="true" />
+            <element signature="e#10436#10437#0" expanded="true" />
+            <element signature="e#10489#10490#0" expanded="true" />
+            <element signature="e#10526#10527#0" expanded="true" />
+            <element signature="e#10397#10398#0" expanded="true" />
+            <element signature="e#10431#10432#0" expanded="true" />
+            <element signature="e#10479#10480#0" expanded="true" />
+            <element signature="e#10514#10515#0" expanded="true" />
+            <element signature="e#10563#10564#0" expanded="true" />
+            <element signature="e#10605#10606#0" expanded="true" />
+            <element signature="e#10643#10644#0" expanded="true" />
+            <element signature="e#10674#10675#0" expanded="true" />
+            <element signature="e#10725#10726#0" expanded="true" />
+            <element signature="e#10759#10760#0" expanded="true" />
+            <element signature="e#10802#10803#0" expanded="true" />
+            <element signature="e#10837#10838#0" expanded="true" />
+            <element signature="e#10896#10897#0" expanded="true" />
+            <element signature="e#10938#10939#0" expanded="true" />
+            <element signature="e#10979#10980#0" expanded="true" />
+            <element signature="e#11013#11014#0" expanded="true" />
+            <element signature="e#11069#11070#0" expanded="true" />
+            <element signature="e#11109#11110#0" expanded="true" />
           </folding>
         </state>
       </provider>
