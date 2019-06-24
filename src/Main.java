@@ -182,7 +182,7 @@ public class Main
         {
             module.getSwivelTalon().set(0);
             module.setStopped(true);
-            if (!module.getLastStopped() && (smallestDifference == Case.TO_OPPOSITE_ANGLE || smallestDifference == Case.TO_OPPOSITE_ANGLE_OVER_GAP))
+            if ((target != module.getLastTarget() || !module.getLastStopped()) && (smallestDifference == Case.TO_OPPOSITE_ANGLE || smallestDifference == Case.TO_OPPOSITE_ANGLE_OVER_GAP))
             {
                 module.getSwivelTalon().setInverted(!module.getSwivelTalon().getInverted());
                 module.getDriveTalon().setInverted(!module.getDriveTalon().getInverted());
