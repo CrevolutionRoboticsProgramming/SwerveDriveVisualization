@@ -1,3 +1,5 @@
+package main;
+
 import org.jsfml.graphics.*;
 import org.jsfml.system.Vector2f;
 import org.jsfml.window.Joystick;
@@ -8,13 +10,21 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Vector;
+
+class Dummy
+{
+    public static void main(String[] args)
+    {
+        Main main = new Main();
+        main.run();
+    }
+}
 
 public class Main
 {
-    private static Constants mConstants = Constants.getInstance();
+    private Constants mConstants = Constants.getInstance();
     
-    public static void main(String[] args)
+    public void run()
     {
         int joystickNumber = 0;
 
@@ -115,7 +125,7 @@ public class Main
         }
     }
 
-    private static void turnToAngle(SwerveModule module, double angle)
+    private void turnToAngle(SwerveModule module, double angle)
     {
         double counts = module.getSwivelTalon().getSelectedSensorPosition(0);
 
@@ -199,7 +209,7 @@ public class Main
         module.setLastTarget(target);
     }
 
-    static class WPI_TalonSRX
+    class WPI_TalonSRX
     {
         public double output = 0;
         public double counts = 0;
@@ -248,7 +258,7 @@ public class Main
         }
     }
 
-    static class SwerveModule extends Sprite
+    class SwerveModule extends Sprite
     {
         private WPI_TalonSRX mDriveTalon, mSwivelTalon;
         private boolean mStopped = false;

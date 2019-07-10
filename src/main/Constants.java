@@ -1,3 +1,5 @@
+package main;
+
 import org.jsfml.system.Vector2f;
 
 public class Constants
