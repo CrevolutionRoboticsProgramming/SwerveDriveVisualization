@@ -11,22 +11,13 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-class Dummy
-{
-    public static void main(String[] args)
-    {
-        Main main = new Main();
-        main.run();
-    }
-}
-
 public class Main
 {
-    private Constants mConstants = Constants.getInstance();
-    
-    public void run()
+    private static Constants mConstants = Constants.getInstance();
+
+    public static void main(String[] args)
     {
-        int joystickNumber = 0;
+        int joystickNumber = 2;
 
         RenderWindow window = new RenderWindow(new VideoMode(800, 800), "Swerve Drive Visualization");
         window.setFramerateLimit(120);
@@ -111,7 +102,7 @@ public class Main
             // Converts the angle to degrees for easier understanding. All the other angles were in radians because the Math trig functions use rads
             for (int i = 0; i < mSwerveModules.size(); ++i)
             {
-                turnToAngle(mSwerveModules.get(i), Math.atan2(swerveMovementVectors.get(i).y, swerveMovementVectors.get(i).x) * 180 / Math.PI - 90);
+                mSwerveModules.get(i).turnToAngle(Math.atan2(swerveMovementVectors.get(i).y, swerveMovementVectors.get(i).x) * 180 / Math.PI - 90);
                 mSwerveModules.get(i).getDriveTalon().set(Math.sqrt(Math.pow(swerveMovementVectors.get(i).x, 2) + Math.pow(swerveMovementVectors.get(i).y, 2)));
             }
 
@@ -124,10 +115,127 @@ public class Main
             window.display();
         }
     }
+}
 
-    private void turnToAngle(SwerveModule module, double angle)
+class WPI_TalonSRX
+{
+    public double output = 0;
+    public double counts = 0;
+
+    private boolean isInverted = false;
+
+    void set(ControlMode mode, double output)
     {
-        double counts = module.getSwivelTalon().getSelectedSensorPosition(0);
+        if (mode == ControlMode.PercentOutput)
+        {
+            this.output = output;
+            if (isInverted)
+                this.output = -this.output;
+        } else if (mode == ControlMode.Position)
+        {
+            if (output - counts != 0)
+                this.output = output - counts > 0 ? 1 : -1;
+            else
+                this.output = 0;
+        }
+    }
+
+    void set(double output)
+    {
+        set(ControlMode.PercentOutput, output);
+    }
+
+    void setSelectedSensorPosition(int pos)
+    {
+        counts = pos;
+    }
+
+    double getSelectedSensorPosition(int pidx)
+    {
+        return counts;
+    }
+
+    public boolean getInverted()
+    {
+        return isInverted;
+    }
+
+    public void setInverted(boolean inverted)
+    {
+        isInverted = inverted;
+    }
+}
+
+class SwerveModule extends Sprite
+{
+    private Constants mConstants = Constants.getInstance();
+    private WPI_TalonSRX mDriveTalon, mSwivelTalon;
+    private boolean mStopped = false;
+    private boolean mLastStopped = false;
+    private double mLastTarget = 0.0;
+    private double mPerpendicularAngle;
+
+    public SwerveModule(Texture texture, Vector2f position)
+    {
+        super(texture);
+        setOrigin(new Vector2f(
+                getPosition().x + (getGlobalBounds().width / 2),
+                getPosition().y + (getGlobalBounds().height / 2)));
+        setPosition(position);
+        mPerpendicularAngle = Math.atan2(Vector2f.sub(mConstants.robotCenter, getPosition()).y, Vector2f.sub(mConstants.robotCenter, getPosition()).x) - (Math.PI / 2);
+
+        mDriveTalon = new WPI_TalonSRX();
+        mSwivelTalon = new WPI_TalonSRX();
+    }
+
+    public WPI_TalonSRX getDriveTalon()
+    {
+        return mDriveTalon;
+    }
+
+    public WPI_TalonSRX getSwivelTalon()
+    {
+        return mSwivelTalon;
+    }
+
+    public double getPerpendicularAngle()
+    {
+        return mPerpendicularAngle;
+    }
+
+    public boolean isStopped()
+    {
+        return mStopped;
+    }
+
+    public void setStopped(boolean stopped)
+    {
+        mStopped = stopped;
+    }
+
+    public boolean getLastStopped()
+    {
+        return mLastStopped;
+    }
+
+    public void setLastStopped(boolean lastStopped)
+    {
+        mLastStopped = lastStopped;
+    }
+
+    public double getLastTarget()
+    {
+        return mLastTarget;
+    }
+
+    public void setLastTarget(double lastTarget)
+    {
+        mLastTarget = lastTarget;
+    }
+
+    public void turnToAngle(double angle)
+    {
+        double counts = getSwivelTalon().getSelectedSensorPosition(0);
 
         // This enables field-centric driving. It adds the rotation of the robot to the total counts so it knows where to turn
         //mPigeon.getYawPitchRoll(ypr);
@@ -148,7 +256,7 @@ public class Main
         if (counts < 0) counts += mConstants.dt_countsPerSwerveRotation;
 
         // We had to put the sensor position through Math.abs before, so this fixes absoluteCounts
-        if (module.getSwivelTalon().getSelectedSensorPosition(0) < 0)
+        if (getSwivelTalon().getSelectedSensorPosition(0) < 0)
             counts = mConstants.dt_countsPerSwerveRotation - counts;
 
         double oppositeAngle = target - (mConstants.dt_countsPerSwerveRotation / 2);
@@ -190,161 +298,44 @@ public class Main
 
         if (Math.abs(differences.get(smallestDifference)) < 8)
         {
-            module.getSwivelTalon().set(0);
-            module.setStopped(true);
-            if ((target != module.getLastTarget() || !module.getLastStopped()) && (smallestDifference == Case.TO_OPPOSITE_ANGLE || smallestDifference == Case.TO_OPPOSITE_ANGLE_OVER_GAP))
+            getSwivelTalon().set(0);
+            setStopped(true);
+            if ((target != getLastTarget() || !getLastStopped()) && (smallestDifference == Case.TO_OPPOSITE_ANGLE || smallestDifference == Case.TO_OPPOSITE_ANGLE_OVER_GAP))
             {
-                module.getSwivelTalon().setInverted(!module.getSwivelTalon().getInverted());
-                module.getDriveTalon().setInverted(!module.getDriveTalon().getInverted());
+                getSwivelTalon().setInverted(!getSwivelTalon().getInverted());
+                getDriveTalon().setInverted(!getDriveTalon().getInverted());
 
-                module.getSwivelTalon().setSelectedSensorPosition((int) (module.getSwivelTalon().getSelectedSensorPosition(0) - (mConstants.dt_countsPerSwerveRotation / 2)));
+                getSwivelTalon().setSelectedSensorPosition((int) (getSwivelTalon().getSelectedSensorPosition(0) - (mConstants.dt_countsPerSwerveRotation / 2)));
             }
         } else
         {
-            module.getSwivelTalon().set(ControlMode.Position, module.getSwivelTalon().getSelectedSensorPosition(0) + differences.get(smallestDifference));
-            module.setStopped(false);
+            getSwivelTalon().set(ControlMode.Position, getSwivelTalon().getSelectedSensorPosition(0) + differences.get(smallestDifference));
+            setStopped(false);
         }
 
-        module.setLastStopped(module.isStopped());
-        module.setLastTarget(target);
+        setLastStopped(isStopped());
+        setLastTarget(target);
     }
 
-    class WPI_TalonSRX
+    void update()
     {
-        public double output = 0;
-        public double counts = 0;
+        rotate((float) -mSwivelTalon.output);
+        mSwivelTalon.counts += mSwivelTalon.output / 360 * 4096;
 
-        private boolean isInverted = false;
-
-        void set(ControlMode mode, double output)
-        {
-            if (mode == ControlMode.PercentOutput)
-            {
-                this.output = output;
-                if (isInverted)
-                    this.output = -this.output;
-            } else if (mode == ControlMode.Position)
-            {
-                if (output - counts != 0)
-                    this.output = output - counts > 0 ? 1 : -1;
-                else
-                    this.output = 0;
-            }
-        }
-
-        void set(double output)
-        {
-            set(ControlMode.PercentOutput, output);
-        }
-
-        void setSelectedSensorPosition(int pos)
-        {
-            counts = pos;
-        }
-
-        double getSelectedSensorPosition(int pidx)
-        {
-            return counts;
-        }
-
-        public boolean getInverted()
-        {
-            return isInverted;
-        }
-
-        public void setInverted(boolean inverted)
-        {
-            isInverted = inverted;
-        }
+        setScale(1, (float) (Math.abs(mDriveTalon.output) > 0.2 ? mDriveTalon.output : 0.2));
     }
+}
 
-    class SwerveModule extends Sprite
-    {
-        private WPI_TalonSRX mDriveTalon, mSwivelTalon;
-        private boolean mStopped = false;
-        private boolean mLastStopped = false;
-        private double mLastTarget = 0.0;
-        private double mPerpendicularAngle = 0.0;
+enum ControlMode
+{
+    PercentOutput,
+    Position
+}
 
-        public SwerveModule(Texture texture, Vector2f position)
-        {
-            super(texture);
-            setOrigin(new Vector2f(
-                    getPosition().x + (getGlobalBounds().width / 2),
-                    getPosition().y + (getGlobalBounds().height / 2)));
-            setPosition(position);
-            mPerpendicularAngle = Math.atan2(Vector2f.sub(mConstants.robotCenter, getPosition()).y, Vector2f.sub(mConstants.robotCenter, getPosition()).x) - (Math.PI / 2);
-
-            mDriveTalon = new WPI_TalonSRX();
-            mSwivelTalon = new WPI_TalonSRX();
-        }
-
-        public WPI_TalonSRX getDriveTalon()
-        {
-            return mDriveTalon;
-        }
-
-        public WPI_TalonSRX getSwivelTalon()
-        {
-            return mSwivelTalon;
-        }
-
-        public double getPerpendicularAngle()
-        {
-            return mPerpendicularAngle;
-        }
-
-        public boolean isStopped()
-        {
-            return mStopped;
-        }
-
-        public void setStopped(boolean stopped)
-        {
-            mStopped = stopped;
-        }
-
-        public boolean getLastStopped()
-        {
-            return mLastStopped;
-        }
-
-        public void setLastStopped(boolean lastStopped)
-        {
-            mLastStopped = lastStopped;
-        }
-
-        public double getLastTarget()
-        {
-            return mLastTarget;
-        }
-
-        public void setLastTarget(double lastTarget)
-        {
-            mLastTarget = lastTarget;
-        }
-
-
-        void update()
-        {
-            rotate((float) -mSwivelTalon.output);
-            mSwivelTalon.counts += mSwivelTalon.output / 360 * 4096;
-
-            setScale(1, (float) (Math.abs(mDriveTalon.output) > 0.2 ? mDriveTalon.output : 0.2));
-        }
-    }
-
-    public enum ControlMode
-    {
-        PercentOutput,
-        Position
-    }
-
-    public enum Case
-    {
-        BEST_CASE,
-        OVER_GAP,
-        TO_OPPOSITE_ANGLE,
-        TO_OPPOSITE_ANGLE_OVER_GAP,
-    }
+enum Case
+{
+    BEST_CASE,
+    OVER_GAP,
+    TO_OPPOSITE_ANGLE,
+    TO_OPPOSITE_ANGLE_OVER_GAP,
 }
