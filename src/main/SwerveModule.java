@@ -81,6 +81,11 @@ public class SwerveModule extends Sprite
         mLastTarget = lastTarget;
     }
 
+    // We put both the current counts and the target counts on an absolute scale because
+    //      it's easier to visualize in my opinion. We could do the same process with
+    //      a continuous model, but the same problems with the transition over 0 degrees
+    //      with a mismatched current position and target (like 4095 and 5) and calculating
+    //      when to move to the opposite angle and reverse still arise.
     public void turnToAngle(double angle)
     {
         double counts = getSwivelTalon().getSelectedSensorPosition(0);
